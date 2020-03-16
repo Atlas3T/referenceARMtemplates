@@ -1,0 +1,27 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "resourceTemplateUri": {
+            "value" : "https://github.com/Switch1983/ARMResourceTemplates/"
+        },
+        "vNetResourceGroup":     {"value": "atlas-tst-vNet"},    
+        "vNetName":              {"value": "atlas-tst-vNet"},  
+        "subnetName":            {"value": "atlas-tst-data"},
+        "lbSubnetName":          {"value": "atlas-tst-data"},  
+
+        "resourcePrefix":        {"value": "atl-tst-bcd"},  
+
+        "adminUsername":         {"value": "guest972"},
+
+        "vmSize":                {"value": "Standard_B2ms"},
+        "instanceCount":         {"value": 2},
+        "dataDiskCount":         {"value": 1}, 
+
+        "dataDisk1_name":        {"value": "ApplicationData"},
+        "dataDisk1_uriSuffix":   {"value": "-ApplicationData.vhd"},
+        "dataDisk1_diskSizeGB":  {"value": 1023},
+        "dataDisk1_storageType": {"value": "Standard"},
+        "dataDisk1_caching":     {"value": "ReadWrite"}
+    }
+}

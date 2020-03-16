@@ -1,0 +1,327 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "resourceTemplateUri": {
+      "type": "string",
+      "minLength": 14,
+      "metadata": {
+        "description": "The URI hosting nested templates, for linked deployments"
+      }
+    },
+    "resourcePrefix": {
+      "type": "string"
+    }
+  },
+  "variables": {
+      "vNetName"                       : "[concat(parameters('resourcePrefix'),'-vnet')]",
+      "vNetDisplayName"                : "[concat(toUpper(parameters('resourcePrefix')),' - Virtual Network')]",
+      "vNetPrefix"                     : ["10.0.0.0/24"],
+      "webName"                        : "[concat(parameters('resourcePrefix'),'-web')]",
+      "webPrefix"                      : "10.0.0.0/27",
+      "appName"                        : "[concat(parameters('resourcePrefix'),'-application')]",
+      "appPrefix"                      : "10.0.0.32/27",
+      "dataName"                       : "[concat(parameters('resourcePrefix'),'-data')]",
+      "dataPrefix"                     : "10.0.0.64/27",
+      "supportingInfrastructureName"   : "[concat(parameters('resourcePrefix'),'-suppinf')]",
+      "supportingInfrastructurePrefix" : "10.0.0.96/27",
+      "coreInfrastructureName"         : "[concat(parameters('resourcePrefix'),'-coreinf')]",
+      "coreInfrastructurePrefix"       : "10.0.0.128/27",
+      "cryptoName"                     : "[concat(parameters('resourcePrefix'),'-crypto')]",
+      "cryptoPrefix"                   : "10.0.0.160/27"
+  },
+    "resources": [
+        {
+          "apiVersion": "2015-06-15",
+          "type": "Microsoft.Network/networkSecurityGroups",
+          "name": "[concat(variables('webName'), '-nsg')]",
+          "location": "[resourceGroup().location]",
+          "tags": {
+            "displayName": "Web Subnet Security Group"
+          },
+          "properties": {
+            "securityRules": [
+              {
+                "name": "ALLOW_HTTPS_INET_INBOUND",
+                "properties": {
+                  "description": "Allow HTTPS inbound from Internet",
+                  "protocol": "Tcp",
+                  "sourcePortRange": "*",
+                  "destinationPortRange": "443",
+                  "sourceAddressPrefix": "192.168.0.2",
+                  "destinationAddressPrefix": "*",
+                  "access": "Allow",
+                  "priority": 111,
+                  "direction": "Inbound"
+                }
+              },
+              {
+                "name": "ALLOW_HTTPS_ATLAS_OFFICE_INBOUND",
+                "properties": {
+                  "description": "Allow HTTPS inbound from Atlas City Finance office",
+                  "protocol": "Tcp",
+                  "sourcePortRange": "*",
+                  "destinationPortRange": "443",
+                  "sourceAddressPrefix": "192.168.0.1",
+                  "destinationAddressPrefix": "*",
+                  "access": "Allow",
+                  "priority": 113,
+                  "direction": "Inbound"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "apiVersion": "2015-06-15",
+          "type": "Microsoft.Network/networkSecurityGroups",
+          "name": "[concat(variables('appName'), '-nsg')]",
+          "location": "[resourceGroup().location]",
+          "tags": {
+            "displayName": "App Subnet Security Group"
+          },
+          "properties": {
+            "securityRules": [
+            ]
+          }
+        },    
+        {
+          "apiVersion": "2015-06-15",
+          "type": "Microsoft.Network/networkSecurityGroups",
+          "name": "[concat(variables('dataName'), '-nsg')]",
+          "location": "[resourceGroup().location]",
+          "tags": {
+            "displayName": "Data Subnet Security Group"
+          },
+          "properties": {
+            "securityRules": [
+              {
+                "name": "ALLOW_ALL_DATA_INBOUND",
+                "properties": {
+                  "description": "Allow ALL inbound from own subnet",
+                  "protocol": "Tcp",
+                  "sourcePortRange": "*",
+                  "destinationPortRange": "*",
+                  "sourceAddressPrefix": "[variables('dataPrefix')]",
+                  "destinationAddressPrefix": "*",
+                  "access": "Allow",
+                  "priority": 200,
+                  "direction": "Inbound"
+                }
+              },              
+              {
+                "name": "ALLOW_SQL_APP_INBOUND",
+                "properties": {
+                  "description": "Allow SQL inbound from App subnet",
+                  "protocol": "Tcp",
+                  "sourcePortRange": "*",
+                  "destinationPortRange": "1433",
+                  "sourceAddressPrefix": "[variables('appPrefix')]",
+                  "destinationAddressPrefix": "*",
+                  "access": "Allow",
+                  "priority": 201,
+                  "direction": "Inbound"
+                }
+              }              
+            ]
+          }
+        },
+        {
+          "apiVersion": "2015-06-15",
+          "type": "Microsoft.Network/networkSecurityGroups",
+          "name": "[concat(variables('cryptoName'), '-nsg')]",
+          "location": "[resourceGroup().location]",
+          "tags": {
+            "displayName": "Crypto Subnet Security Group"
+          },
+          "properties": {
+            "securityRules": [
+              {
+                "name": "ALLOW_ALL_DATA_INBOUND",
+                "properties": {
+                  "description": "Allow ALL inbound from own subnet",
+                  "protocol": "Tcp",
+                  "sourcePortRange": "*",
+                  "destinationPortRange": "*",
+                  "sourceAddressPrefix": "[variables('cryptoPrefix')]",
+                  "destinationAddressPrefix": "*",
+                  "access": "Allow",
+                  "priority": 200,
+                  "direction": "Inbound"
+                }
+              },              
+              {
+                "name": "ALLOW_BTC_WEB_INBOUND",
+                "properties": {
+                  "description": "Allow BTC inbound from Web subnet",
+                  "protocol": "Tcp",
+                  "sourcePortRange": "*",
+                  "destinationPortRange": "8333",
+                  "sourceAddressPrefix": "[variables('webPrefix')]",
+                  "destinationAddressPrefix": "*",
+                  "access": "Allow",
+                  "priority": 201,
+                  "direction": "Inbound"
+                }
+              },
+              {
+                "name": "ALLOW_BTC_INET_INBOUND",
+                "properties": {
+                  "description": "Allow BTC inbound from Internet",
+                  "protocol": "Tcp",
+                  "sourcePortRange": "*",
+                  "destinationPortRange": "8333",
+                  "sourceAddressPrefix": "*",
+                  "destinationAddressPrefix": "*",
+                  "access": "Allow",
+                  "priority": 202,
+                  "direction": "Inbound"
+                }
+              },
+              {
+                "name": "ALLOW_ETH_TCP_INET_INBOUND",
+                "properties": {
+                  "description": "Allow ETH TCP inbound from Internet",
+                  "protocol": "Tcp",
+                  "sourcePortRange": "*",
+                  "destinationPortRange": "30303",
+                  "sourceAddressPrefix": "*",
+                  "destinationAddressPrefix": "*",
+                  "access": "Allow",
+                  "priority": 203,
+                  "direction": "Inbound"
+                }
+              },
+              {
+                "name": "ALLOW_ETH_UDP_INET_INBOUND",
+                "properties": {
+                  "description": "Allow ETH UDP inbound from Internet",
+                  "protocol": "Udp",
+                  "sourcePortRange": "*",
+                  "destinationPortRange": "30303",
+                  "sourceAddressPrefix": "*",
+                  "destinationAddressPrefix": "*",
+                  "access": "Allow",
+                  "priority": 204,
+                  "direction": "Inbound"
+                }
+              },
+              {
+                "name": "ALLOW_ETH_WEB_INBOUND",
+                "properties": {
+                  "description": "Allow ETH inbound from Web subnet",
+                  "protocol": "Tcp",
+                  "sourcePortRange": "*",
+                  "destinationPortRange": "8545",
+                  "sourceAddressPrefix": "[variables('webPrefix')]",
+                  "destinationAddressPrefix": "*",
+                  "access": "Allow",
+                  "priority": 205,
+                  "direction": "Inbound"
+                }
+              }             
+            ]
+          }
+        },
+        {
+          "apiVersion": "2015-06-15",
+          "type": "Microsoft.Network/networkSecurityGroups",
+          "name": "[concat(variables('supportingInfrastructureName'), '-nsg')]",
+          "location": "[resourceGroup().location]",
+          "tags": {
+            "displayName": "Supporting Infrastructure Subnet Security Group"
+          },
+          "properties": {
+            "securityRules": [
+              {
+                "name": "ALLOW_RDP_INET_INBOUND",
+                "properties": {
+                  "description": "Allow RDP inbound from internet",
+                  "protocol": "Tcp",
+                  "sourcePortRange": "*",
+                  "destinationPortRange": "3389",
+                  "sourceAddressPrefix": "192.168.0.1",
+                  "destinationAddressPrefix": "*",
+                  "access": "Allow",
+                  "priority": 200,
+                  "direction": "Inbound"
+                }
+              },
+              {
+                "name": "ALLOW_RDP_ATLAS_INBOUND",
+                "properties": {
+                  "description": "Allow RDP inbound from Atlas",
+                  "protocol": "Tcp",
+                  "sourcePortRange": "*",
+                  "destinationPortRange": "3389",
+                  "sourceAddressPrefix": "192.168.0.1",
+                  "destinationAddressPrefix": "*",
+                  "access": "Allow",
+                  "priority": 201,
+                  "direction": "Inbound"
+                }
+              }              
+            ]
+          }
+        },
+        {
+          "apiVersion": "2015-06-15",
+          "type": "Microsoft.Network/networkSecurityGroups",
+          "name": "[concat(variables('coreInfrastructureName'), '-nsg')]",
+          "location": "[resourceGroup().location]",
+          "tags": {
+            "displayName": "Core Infrastructure Subnet Security Group"
+          },
+          "properties": {
+            "securityRules": [
+            ]
+          }
+        },                  
+        {
+          "name": "[variables('vNetName')]",
+          "type": "Microsoft.Network/virtualNetworks",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "2017-06-01",
+          "dependsOn": [
+            "[concat('Microsoft.Network/networkSecurityGroups/', concat(variables('webName'), '-nsg'))]",
+            "[concat('Microsoft.Network/networkSecurityGroups/', concat(variables('appName'), '-nsg'))]",
+            "[concat('Microsoft.Network/networkSecurityGroups/', concat(variables('dataName'), '-nsg'))]",
+            "[concat('Microsoft.Network/networkSecurityGroups/', concat(variables('supportingInfrastructureName'), '-nsg'))]",
+            "[concat('Microsoft.Network/networkSecurityGroups/', concat(variables('coreInfrastructureName'), '-nsg'))]",
+            "[concat('Microsoft.Network/networkSecurityGroups/', concat(variables('cryptoName'), '-nsg'))]"
+          ],
+          "tags": {
+              "displayName": "[variables('vNetDisplayName')]"
+          },
+          "properties": {
+            "addressSpace": {
+              "addressPrefixes": "[variables('vNetPrefix')]"
+            },
+            "dhcpOptions": {
+              "dnsServers": []
+            },
+            "subnets": [
+              { "name": "[variables('webName')]", "properties": {"addressPrefix": "[variables('webPrefix')]",
+                "networkSecurityGroup": {"id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat(variables('webName'),'-nsg'))]"}}},
+
+              { "name": "[variables('appName')]", "properties": {"addressPrefix": "[variables('appPrefix')]",
+                "networkSecurityGroup": {"id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat(variables('appName'), '-nsg'))]"}}},
+
+              { "name": "[variables('dataName')]", "properties": {"addressPrefix": "[variables('dataPrefix')]",
+                "networkSecurityGroup": {"id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat(variables('dataName'), '-nsg'))]"}}},
+                
+              { "name": "[variables('supportingInfrastructureName')]", "properties": {"addressPrefix": "[variables('supportingInfrastructurePrefix')]",
+                "networkSecurityGroup": {"id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat(variables('supportingInfrastructureName'), '-nsg'))]"}}},
+
+              { "name": "[variables('coreInfrastructureName')]", "properties": {"addressPrefix": "[variables('coreInfrastructurePrefix')]",
+                "networkSecurityGroup": {"id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat(variables('coreInfrastructureName'), '-nsg'))]"}}},
+            
+              { "name": "[variables('cryptoName')]", "properties": {"addressPrefix": "[variables('cryptoPrefix')]",
+                "networkSecurityGroup": {"id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat(variables('cryptoName'), '-nsg'))]"}}}
+            ]
+          }
+        }
+    ],
+    "outputs": {
+    }
+}

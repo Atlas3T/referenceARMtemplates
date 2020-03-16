@@ -1,0 +1,39 @@
+# Using Azure TST
+
+#VNET
+az group create -n "ATLAS-TST-VNET" -l "NorthEurope" 
+az deployment group create -g "ATLAS-TST-VNET" --template-file ".\Templates\atlas-vnet.deploy.json" --parameters @".\Parameters\TST\VNET.params.json" --verbose
+
+#Deployments without load balancers:
+
+#DC
+az group create -n "ATLAS-TST-DC" -l "NorthEurope" 
+az deployment group create -g "ATLAS-TST-DC" --template-file ".\Templates\vmas-sa-nic.master.json" --parameters @".\Parameters\TST\DC.params.json" --verbose
+
+#MGMT
+az group create -n "ATLAS-TST-MGMT" -l "NorthEurope" 
+az deployment group create -g "ATLAS-TST-MGMT" --template-file ".\Templates\vmas-sa-nic.master.json" --parameters @".\Parameters\TST\MGMT.params.json" --verbose
+
+#Deployments with load balancers for external access (load balancers not needed if sat behind Barracuda's that act as load balancers):
+
+#EXWA
+az group create -n "ATLAS-TST-EXWA" -l "NorthEurope" 
+az deployment group create -g "ATLAS-TST-EXWA" --template-file ".\Templates\vmas-sa-nic-lb-external.master.json" --parameters @".\Parameters\TST\EXWA.params.json" --verbose
+
+#BITCOIN
+az group create -n "ATLAS-TST-BTC" -l "NorthEurope" 
+az deployment group create -g "ATLAS-TST-BTC" --template-file ".\Templates\vmas-sa-nic.master.json" --parameters @".\Parameters\TST\BTC.params.json" --verbose
+
+#ETHEREUM
+az group create -n "ATLAS-TST-ETH" -l "NorthEurope" 
+az deployment group create -g "ATLAS-TST-ETH" --template-file ".\Templates\vmas-sa-nic.master.json" --parameters @".\Parameters\TST\ETH.params.json" --verbose
+
+#CATALYST
+az group create -n "ATLAS-TST-CAT" -l "NorthEurope" 
+az deployment group create -g "ATLAS-TST-CAT" --template-file ".\Templates\vmas-sa-nic.master.json" --parameters @".\Parameters\TST\CAT.params.json" --verbose
+
+#Deployments with load balancers for SQL:
+
+#BCD
+az group create -n "ATLAS-TST-BCD" -l "NorthEurope" 
+az deployment group create -g "ATLAS-TST-BCD" --template-file ".\Templates\vmas-sa-nic-lb-sql.master.json" --parameters @".\Parameters\CI\BCD.params.json" --verbose

@@ -1,0 +1,20 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "resourceTemplateUri": {
+            "value" : "https://github.com/Switch1983/ARMResourceTemplates/"
+        },
+        "vNetResourceGroup": {"value": "atlas-tst-vNet"},    
+        "vnetName":          {"value": "atlas-tst-vNet"},    
+        "subnetName":        {"value": "atlas-tst-coreInf"},
+        
+        "resourcePrefix":    {"value": "atl-tst-ca"},  
+
+        "adminUsername":     {"value": "guest972"},
+
+        "vmSize":            {"value": "Standard_B2ms"},
+        "instanceCount":     {"value": 2}
+ 
+    }
+}

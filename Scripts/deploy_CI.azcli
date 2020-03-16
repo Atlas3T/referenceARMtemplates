@@ -1,0 +1,39 @@
+# Using Azure CI
+
+#VNET
+az group create -n "ATLAS-CI-VNET" -l "NorthEurope" 
+az deployment group create -g "ATLAS-CI-VNET" --template-file ".\Templates\atlas-vnet.deploy.json" --parameters @".\Parameters\CI\VNET.params.json" --verbose
+
+#Deployments without load balancers:
+
+#DC
+az group create -n "ATLAS-CI-DC" -l "NorthEurope" 
+az deployment group create -g "ATLAS-CI-DC" --template-file ".\Templates\vmas-sa-nic.master.json" --parameters @".\Parameters\CI\DC.params.json" --verbose
+
+#MGMT
+az group create -n "ATLAS-CI-MGMT" -l "NorthEurope" 
+az deployment group create -g "ATLAS-CI-MGMT" --template-file ".\Templates\vmas-sa-nic.master.json" --parameters @".\Parameters\CI\MGMT.params.json" --verbose
+
+#Deployments with load balancers for external access (load balancers not needed if sat behind Barracuda's that act as load balancers):
+
+#EXWA
+az group create -n "ATLAS-CI-EXWA" -l "NorthEurope" 
+az deployment group create -g "ATLAS-CI-EXWA" --template-file ".\Templates\vmas-sa-nic-lb-external.master.json" --parameters @".\Parameters\CI\EXWA.params.json" --verbose
+
+#BITCOIN
+az group create -n "ATLAS-CI-BTC" -l "NorthEurope" 
+az deployment group create -g "ATLAS-CI-BTC" --template-file ".\Templates\vmas-sa-nic.master.json" --parameters @".\Parameters\CI\BTC.params.json" --verbose
+
+#ETHEREUM
+az group create -n "ATLAS-CI-ETH" -l "NorthEurope" 
+az deployment group create -g "ATLAS-CI-ETH" --template-file ".\Templates\vmas-sa-nic.master.json" --parameters @".\Parameters\CI\ETH.params.json" --verbose
+
+#CATALYST
+az group create -n "ATLAS-CI-CAT" -l "NorthEurope" 
+az deployment group create -g "ATLAS-CI-CAT" --template-file ".\Templates\vmas-sa-nic.master.json" --parameters @".\Parameters\CI\CAT.params.json" --verbose
+
+#Deployments with load balancers for SQL:
+
+#BCD
+az group create -n "ATLAS-CI-BCD" -l "NorthEurope" 
+az deployment group create -g "ATLAS-CI-BCD" --template-file ".\Templates\vmas-sa-nic-lb-sql.master.json" --parameters @".\Parameters\CI\BCD.params.json" --verbose

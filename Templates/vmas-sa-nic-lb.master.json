@@ -1,0 +1,441 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "resourceTemplateUri" : {
+      "type": "string",
+      "minLength": 14,
+      "metadata": {
+        "description" : "The URI hosting nested templates, for linked deployments"
+      }
+    },
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "Admin username"
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "defaultValue": "[concat('Admin!234',toLower(replace(uniqueString(resourceGroup().id),'-','')))]",
+      "metadata": {
+        "description": "Admin password"
+      }
+    },
+    "resourcePrefix": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Prefix to use for resource names"
+      }
+    },
+    "imagePublisher": {
+      "type": "string",
+      "defaultValue": "MicrosoftWindowsServer",
+      "metadata": {
+        "description": "Image Publisher"
+      }
+    },
+    "imageOffer": {
+      "type": "string",
+      "defaultValue": "WindowsServer",
+      "metadata": {
+        "description": "Image Offer"
+      }
+    },
+    "imageSKU": {
+      "type": "string",
+      "defaultValue": "2019-Datacenter",
+      "allowedValues": [
+        "2008-R2-SP1",
+        "2012-Datacenter",
+        "2012-R2-Datacenter",
+        "2016-Nano-Server",
+        "2016-Datacenter-with-Containers",
+        "2016-Datacenter",
+        "2019-Datacenter"
+      ],
+      "metadata": {
+        "description": "Image SKU"
+      }
+    },
+    "vmSize": {
+      "type": "string",
+      "minLength": 1,
+      "defaultValue": "Standard_A1",
+      "metadata": {
+        "description": "Size of the virtual machine, must be available in the virtual machine's location"
+      }
+    },
+    "instanceCount": {
+      "type": "int",
+      "defaultValue": 2,
+      "metadata": {
+        "description": "Number of Virtual Machines to create"
+      }
+    },
+    "standardStorageAccountType": {
+      "type": "string",
+      "defaultValue": "Standard_LRS",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_GRS"      
+      ],
+      "metadata": {
+        "description": "Storage Account Type for Virtual Machines"
+      }
+    },
+    "premiumStorageAccountType": {
+      "type": "string",
+      "defaultValue": "Premium_LRS",
+      "allowedValues": [
+        "Premium_LRS"  
+      ],
+      "metadata": {
+        "description": "Storage Account Type for Virtual Machines"
+      }
+    },
+    "vNetResourceGroup": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of Resource Group containing Virtual Network"
+      }
+    },
+    "vnetName": {
+      "type": "string",
+      "defaultValue": "myVNET",
+      "metadata": {
+        "description": "vNet name"
+      }
+    },
+    "subnetName": {
+      "type": "string",
+      "defaultValue": "SubnetDefault",
+      "metadata": {
+        "description": "The name of the Subnet where Virtual Machines will be created"
+      }
+    },
+    "lbSubnetName": {
+        "type": "string",
+        "metadata": {
+            "description": "The name of the Subnet for the Azure Load Balancer"
+        }
+    },
+    "dataDiskCount": {
+        "type": "int",
+        "defaultValue": 0,
+        "metadata": {"description": "Number of Data Disks to add to VM - taken from DataDiskArray variable"}
+    },
+    "dataDisk1_name": {"type": "string","defaultValue": "dataDisk1"},
+    "dataDisk1_uriSuffix": {"type": "string", "defaultValue": "-dataDisk1.vhd"},
+    "dataDisk1_lun": {"type": "int", "defaultValue": 0},
+    "dataDisk1_createOption": {"type": "string", "defaultValue": "Empty"},
+    "dataDisk1_caching": {"type": "string", "defaultValue": "ReadWrite"},
+    "dataDisk1_diskSizeGB": {"type": "int", "defaultValue": 127},
+    "dataDisk1_storageType": {"type": "string", "defaultValue": "Standard"},
+
+    "dataDisk2_name": {"type": "string","defaultValue": "dataDisk2"},
+    "dataDisk2_uriSuffix": {"type": "string", "defaultValue": "-dataDisk2.vhd"},
+    "dataDisk2_lun": {"type": "int", "defaultValue": 1},
+    "dataDisk2_createOption": {"type": "string", "defaultValue": "Empty"},
+    "dataDisk2_caching": {"type": "string", "defaultValue": "ReadWrite"},
+    "dataDisk2_diskSizeGB": {"type": "int", "defaultValue": 127},
+    "dataDisk2_storageType": {"type": "string", "defaultValue": "Standard"},
+
+    "dataDisk3_name": {"type": "string","defaultValue": "dataDisk3"},
+    "dataDisk3_uriSuffix": {"type": "string", "defaultValue": "-dataDisk3.vhd"},
+    "dataDisk3_lun": {"type": "int", "defaultValue": 2},
+    "dataDisk3_createOption": {"type": "string", "defaultValue": "Empty"},
+    "dataDisk3_caching": {"type": "string", "defaultValue": "ReadWrite"},
+    "dataDisk3_diskSizeGB": {"type": "int", "defaultValue": 127},
+    "dataDisk3_storageType": {"type": "string", "defaultValue": "Standard"},
+
+    "dataDisk4_name": {"type": "string","defaultValue": "dataDisk4"},
+    "dataDisk4_uriSuffix": {"type": "string", "defaultValue": "-dataDisk4.vhd"},
+    "dataDisk4_lun": {"type": "int", "defaultValue": 3},
+    "dataDisk4_createOption": {"type": "string", "defaultValue": "Empty"},
+    "dataDisk4_caching": {"type": "string", "defaultValue": "ReadWrite"},
+    "dataDisk4_diskSizeGB": {"type": "int", "defaultValue": 127},
+    "dataDisk4_storageType": {"type": "string", "defaultValue": "Standard"},
+
+    "dataDisk5_name": {"type": "string","defaultValue": "dataDisk5"},
+    "dataDisk5_uriSuffix": {"type": "string", "defaultValue": "-dataDisk5.vhd"},
+    "dataDisk5_lun": {"type": "int", "defaultValue": 4},
+    "dataDisk5_createOption": {"type": "string", "defaultValue": "Empty"},
+    "dataDisk5_caching": {"type": "string", "defaultValue": "ReadWrite"},
+    "dataDisk5_diskSizeGB": {"type": "int", "defaultValue": 127},
+    "dataDisk5_storageType": {"type": "string", "defaultValue": "Standard"},
+
+    "dataDisk6_name": {"type": "string","defaultValue": "dataDisk6"},
+    "dataDisk6_uriSuffix": {"type": "string", "defaultValue": "-dataDisk6.vhd"},
+    "dataDisk6_lun": {"type": "int", "defaultValue": 5},
+    "dataDisk6_createOption": {"type": "string", "defaultValue": "Empty"},
+    "dataDisk6_caching": {"type": "string", "defaultValue": "ReadWrite"},
+    "dataDisk6_diskSizeGB": {"type": "int", "defaultValue": 127},
+    "dataDisk6_storageType": {"type": "string", "defaultValue": "Standard"},
+
+    "dataDisk7_name": {"type": "string","defaultValue": "dataDisk7"},
+    "dataDisk7_uriSuffix": {"type": "string", "defaultValue": "-dataDisk7.vhd"},
+    "dataDisk7_lun": {"type": "int", "defaultValue": 6},
+    "dataDisk7_createOption": {"type": "string", "defaultValue": "Empty"},
+    "dataDisk7_caching": {"type": "string", "defaultValue": "ReadWrite"},
+    "dataDisk7_diskSizeGB": {"type": "int", "defaultValue": 127},
+    "dataDisk7_storageType": {"type": "string", "defaultValue": "Standard"},
+
+    "dataDisk8_name": {"type": "string","defaultValue": "dataDisk8"},
+    "dataDisk8_uriSuffix": {"type": "string", "defaultValue": "-dataDisk8.vhd"},
+    "dataDisk8_lun": {"type": "int", "defaultValue": 7},
+    "dataDisk8_createOption": {"type": "string", "defaultValue": "Empty"},
+    "dataDisk8_caching": {"type": "string", "defaultValue": "ReadWrite"},
+    "dataDisk8_diskSizeGB": {"type": "int", "defaultValue": 127},
+    "dataDisk8_storageType": {"type": "string", "defaultValue": "Standard"},
+
+    "vmSuffix" : {"type": "string", "defaultValue": "-vm"},
+    "nicSuffix" : {"type": "string", "defaultValue": "-nic"},
+    "availabilitySetSuffix" : {"type": "string", "defaultValue": "-as"}
+  },
+  "variables": {
+    "standardStorageAccountName": "[concat(toLower(replace(parameters('resourcePrefix'),'-','')),'standard')]",
+    "premiumStorageAccountName": "[concat(toLower(replace(parameters('resourcePrefix'),'-','')),'premium')]",
+    "availabilitySetName": "[concat(parameters('resourcePrefix'),parameters('availabilitySetSuffix'))]",
+    "vNetID" : "[resourceId(parameters('vNetResourceGroup'), 'Microsoft.Network/virtualNetworks', parameters('vNetName'))]",
+    "subnetRef": "[concat(variables('vnetID'),'/subnets/',parameters('subnetName'))]",
+    "nicName" : "[parameters('resourcePrefix')]",
+    "vmName": "[parameters('resourcePrefix')]",
+
+    "lbSubnetRef": "[concat(variables('vnetID'),'/subnets/',parameters('lbSubnetName'))]",
+    "lbName" : "[parameters('resourcePrefix')]",
+    "lbSuffix": "-alb"
+  },
+  "resources": [
+    {
+        "type": "Microsoft.Resources/deployments",
+        "name": "[concat(variables('lbName'),'-LoadBalancer')]",
+        "apiVersion": "2015-01-01",
+        "properties": {
+            "mode": "Incremental",
+            "templateLink": {
+                "uri": "[concat(parameters('resourceTemplateUri'), 'loadBalancer-internal-web.deploy.json')]",
+                "contentVersion": "1.0.0.0"            
+            },
+            "parameters": {
+                "resourceGroupName": {"value":"[resourceGroup().name]"},
+                "resourceGroupLocation": {"value":"[resourceGroup().location]"},
+                "loadBalancerName": {"value": "[concat(variables('lbName'), variables('lbSuffix'))]"},
+                "lbSubnetRef": {"value": "[variables('lbSubnetRef')]"}    
+            }
+        }
+    },      
+    {
+        "type": "Microsoft.Resources/deployments",
+        "name": "StandardStorageAccount",
+        "apiVersion": "2015-01-01",
+        "properties": {
+            "mode": "Incremental",
+            "templateLink": {
+                "uri": "[concat(parameters('resourceTemplateUri'), 'storageAccount.deploy.json')]",
+                "contentVersion": "1.0.0.0"            
+            },
+            "parameters": {
+                "storageAccountType": {"value":"[parameters('standardStorageAccountType')]"},
+                "storageAccountName": {"value":"[variables('standardStorageAccountName')]"},
+                "resourceGroupName": {"value":"[resourceGroup().name]"},
+                "resourceGroupLocation": {"value":"[resourceGroup().location]"}          
+            }
+        }
+    },
+    {
+        "type": "Microsoft.Resources/deployments",
+        "name": "PremiumStorageAccount",
+        "apiVersion": "2015-01-01",
+        "properties": {
+            "mode": "Incremental",
+            "templateLink": {
+                "uri": "[concat(parameters('resourceTemplateUri'), 'storageAccount.deploy.json')]",
+                "contentVersion": "1.0.0.0"            
+            },
+            "parameters": {
+                "storageAccountType": {"value":"[parameters('premiumStorageAccountType')]"},
+                "storageAccountName": {"value":"[variables('premiumStorageAccountName')]"},
+                "resourceGroupName": {"value":"[resourceGroup().name]"},
+                "resourceGroupLocation": {"value":"[resourceGroup().location]"}          
+            }
+        }
+    }, 
+    {
+        "type": "Microsoft.Resources/deployments",
+        "name": "[concat(variables('availabilitySetName'),'-AvailabilitySet')]",
+        "apiVersion": "2015-01-01",
+        "properties": {
+            "mode": "Incremental",
+            "templateLink": {
+                "uri": "[concat(parameters('resourceTemplateUri'), 'availabilitySet.deploy.json')]",
+                "contentVersion": "1.0.0.0"
+            },
+            "parameters": {
+                "availabilitySetName": {"value": "[variables('availabilitySetName')]"},
+                "resourceGroupName": {"value":"[resourceGroup().name]"},
+                "resourceGroupLocation": {"value": "[resourceGroup().location]"}   
+            }
+        }
+    },
+    {
+        "type": "Microsoft.Resources/deployments",
+        "name": "[concat(parameters('resourcePrefix'),'-staticNetworkInterfaces')]",
+        "apiVersion": "2015-01-01",
+        "dependsOn": [
+            "[concat('Microsoft.Resources/deployments/',variables('lbName'), '-LoadBalancer')]"           
+        ],
+        "properties": {
+            "mode": "Incremental",
+            "templateLink": {
+                "uri": "[concat(parameters('resourceTemplateUri'), 'nic-static-lb.deploy.json')]",
+                "contentVersion": "1.0.0.0"
+            },
+            "parameters": {
+                "resourceTemplateUri" : {"value":"[parameters('resourceTemplateUri')]"},
+                "subnetRef": {"value": "[variables('subnetRef')]"},
+                "nicName": {"value": "[variables('nicName')]"},
+                "nicSuffix": {"value": "[parameters('nicSuffix')]"},
+                "instanceCount" : {"value": "[parameters('instanceCount')]"},
+                "resourceGroupName": {"value":"[resourceGroup().name]"},
+                "resourceGroupLocation": {"value": "[resourceGroup().location]"},
+                "lbId": {"value": "[reference(concat(variables('lbName'),'-LoadBalancer')).outputs.lbId.value]"}
+            }
+        }
+    },
+    {
+        "type": "Microsoft.Resources/deployments",
+        "name": "[concat(parameters('resourcePrefix'),'-',padLeft(copyIndex(1),2,'0'),'-virtualMachine')]",
+        "apiVersion": "2015-01-01",
+        "copy": {
+            "name": "vmCopy",
+            "count": "[parameters('instanceCount')]"
+        },
+        "dependsOn": [
+            "[concat('Microsoft.Resources/deployments/','StandardStorageAccount')]",
+            "[concat('Microsoft.Resources/deployments/','PremiumStorageAccount')]", 
+            "[concat('Microsoft.Resources/deployments/',variables('availabilitySetName'),'-AvailabilitySet')]", 
+            "[concat('Microsoft.Resources/deployments/',parameters('resourcePrefix'), '-staticNetworkInterfaces')]"              
+        ],
+        "properties": {
+            "mode": "Incremental",
+            "templateLink": {
+                "uri": "[concat(parameters('resourceTemplateUri'), 'virtualMachine.deploy.json')]",
+                "contentVersion": "1.0.0.0"
+            },
+            "parameters": {
+                "resourceGroupName": {"value": "[resourceGroup().name]"},
+                "resourceGroupLocation": {"value": "[resourceGroup().location]"},
+                "adminUsername": {"value": "[parameters('adminUsername')]"},
+                "adminPassword": {"value": "[parameters('adminPassword')]"},
+                "imagePublisher": {"value":"[parameters('imagePublisher')]"},
+                "imageOffer": {"value": "[parameters('imageOffer')]"},
+                "imageSKU": {"value": "[parameters('imageSKU')]"},
+                "vmSize": {"value": "[parameters('vmSize')]"},
+                "standardStoragePath": {"value": "[concat('http://',variables('standardStorageAccountName'),'.blob.core.windows.net')]"},
+                "premiumStoragePath": {"value": "[concat('http://',variables('premiumStorageAccountName'),'.blob.core.windows.net')]"},
+                "availabilitySetName":{"value": "[variables('availabilitySetName')]"},  
+                "osName": {"value": "[toUpper(concat(variables('vmName'), '-', padLeft(copyIndex(1), 2, '0')))]"},                              
+                "vmName": {"value": "[concat(variables('vmName'), '-', padLeft(copyIndex(1), 2, '0'), parameters('vmSuffix'))]"},
+                "nicName":{"value": "[concat(variables('nicName'),'-', padLeft(copyIndex(1), 2, '0'), parameters('nicSuffix'))]"},
+                "dataDiskCount": {"value": "[parameters('dataDiskCount')]"},
+
+                "dataDisk1_name": {"value": "[parameters('dataDisk1_name')]"},
+                "dataDisk1_uriSuffix": {"value": "[parameters('dataDisk1_uriSuffix')]"},
+                "dataDisk1_lun": {"value": "[parameters('dataDisk1_lun')]"},
+                "dataDisk1_createOption": {"value": "[parameters('dataDisk1_createOption')]"},
+                "dataDisk1_caching": {"value": "[parameters('dataDisk1_caching')]"},
+                "dataDisk1_diskSizeGB": {"value": "[parameters('dataDisk1_diskSizeGB')]"},
+                "dataDisk1_storageType": {"value": "[parameters('dataDisk1_storageType')]"},                
+
+                "dataDisk2_name": {"value": "[parameters('dataDisk2_name')]"},
+                "dataDisk2_uriSuffix": {"value": "[parameters('dataDisk2_uriSuffix')]"},
+                "dataDisk2_lun": {"value": "[parameters('dataDisk2_lun')]"},
+                "dataDisk2_createOption": {"value": "[parameters('dataDisk2_createOption')]"},
+                "dataDisk2_caching": {"value": "[parameters('dataDisk2_caching')]"},
+                "dataDisk2_diskSizeGB": {"value": "[parameters('dataDisk2_diskSizeGB')]"},
+                "dataDisk2_storageType": {"value": "[parameters('dataDisk2_storageType')]"},
+
+                "dataDisk3_name": {"value": "[parameters('dataDisk3_name')]"},
+                "dataDisk3_uriSuffix": {"value": "[parameters('dataDisk3_uriSuffix')]"},
+                "dataDisk3_lun": {"value": "[parameters('dataDisk3_lun')]"},
+                "dataDisk3_createOption": {"value": "[parameters('dataDisk3_createOption')]"},
+                "dataDisk3_caching": {"value": "[parameters('dataDisk3_caching')]"},
+                "dataDisk3_diskSizeGB": {"value": "[parameters('dataDisk3_diskSizeGB')]"},
+                "dataDisk3_storageType": {"value": "[parameters('dataDisk3_storageType')]"},
+
+                "dataDisk4_name": {"value": "[parameters('dataDisk4_name')]"},
+                "dataDisk4_uriSuffix": {"value": "[parameters('dataDisk4_uriSuffix')]"},
+                "dataDisk4_lun": {"value": "[parameters('dataDisk4_lun')]"},
+                "dataDisk4_createOption": {"value": "[parameters('dataDisk4_createOption')]"},
+                "dataDisk4_caching": {"value": "[parameters('dataDisk4_caching')]"},
+                "dataDisk4_diskSizeGB": {"value": "[parameters('dataDisk4_diskSizeGB')]"},
+                "dataDisk4_storageType": {"value": "[parameters('dataDisk4_storageType')]"},
+
+                "dataDisk5_name": {"value": "[parameters('dataDisk5_name')]"},
+                "dataDisk5_uriSuffix": {"value": "[parameters('dataDisk5_uriSuffix')]"},
+                "dataDisk5_lun": {"value": "[parameters('dataDisk5_lun')]"},
+                "dataDisk5_createOption": {"value": "[parameters('dataDisk5_createOption')]"},
+                "dataDisk5_caching": {"value": "[parameters('dataDisk5_caching')]"},
+                "dataDisk5_diskSizeGB": {"value": "[parameters('dataDisk5_diskSizeGB')]"},
+                "dataDisk5_storageType": {"value": "[parameters('dataDisk5_storageType')]"},
+
+                "dataDisk6_name": {"value": "[parameters('dataDisk6_name')]"},
+                "dataDisk6_uriSuffix": {"value": "[parameters('dataDisk6_uriSuffix')]"},
+                "dataDisk6_lun": {"value": "[parameters('dataDisk6_lun')]"},
+                "dataDisk6_createOption": {"value": "[parameters('dataDisk6_createOption')]"},
+                "dataDisk6_caching": {"value": "[parameters('dataDisk6_caching')]"},
+                "dataDisk6_diskSizeGB": {"value": "[parameters('dataDisk6_diskSizeGB')]"},
+                "dataDisk6_storageType": {"value": "[parameters('dataDisk6_storageType')]"},
+
+                "dataDisk7_name": {"value": "[parameters('dataDisk7_name')]"},
+                "dataDisk7_uriSuffix": {"value": "[parameters('dataDisk7_uriSuffix')]"},
+                "dataDisk7_lun": {"value": "[parameters('dataDisk7_lun')]"},
+                "dataDisk7_createOption": {"value": "[parameters('dataDisk7_createOption')]"},
+                "dataDisk7_caching": {"value": "[parameters('dataDisk7_caching')]"},
+                "dataDisk7_diskSizeGB": {"value": "[parameters('dataDisk7_diskSizeGB')]"},
+                "dataDisk7_storageType": {"value": "[parameters('dataDisk7_storageType')]"},
+
+                "dataDisk8_name": {"value": "[parameters('dataDisk8_name')]"},
+                "dataDisk8_uriSuffix": {"value": "[parameters('dataDisk8_uriSuffix')]"},
+                "dataDisk8_lun": {"value": "[parameters('dataDisk8_lun')]"},
+                "dataDisk8_createOption": {"value": "[parameters('dataDisk8_createOption')]"},
+                "dataDisk8_caching": {"value": "[parameters('dataDisk8_caching')]"},
+                "dataDisk8_diskSizeGB": {"value": "[parameters('dataDisk8_diskSizeGB')]"},
+                "dataDisk8_storageType": {"value": "[parameters('dataDisk8_storageType')]"}
+            }
+        }
+    },
+    {
+        "type": "Microsoft.Resources/deployments",
+        "name": "[concat(variables('vmName'),'-',padLeft(copyIndex(1),2,'0'),'-wmfExtn')]",
+        "apiVersion": "2015-01-01",
+        "copy": {
+            "name": "extnCopy",
+            "count": "[parameters('instanceCount')]"
+        },
+        "dependsOn": [
+            "[concat(variables('vmName'),'-',padLeft(copyIndex(1),2,'0'),'-virtualMachine')]"             
+        ],
+        "properties": {
+            "mode": "Incremental",
+            "templateLink": {
+                "uri": "[concat(parameters('resourceTemplateUri'), 'extn-wmf5.deploy.json')]",
+                "contentVersion": "1.0.0.0"
+            },
+            "parameters": {
+                "resourceGroupName": {"value": "[resourceGroup().name]"},
+                "resourceGroupLocation": {"value": "[resourceGroup().location]"},
+                "vmName": {"value": "[concat(variables('vmName'), '-', padLeft(copyIndex(1), 2, '0'), parameters('vmSuffix'))]"}
+            }
+        }      
+    }
+  ],
+    "outputs": {
+        "AdminPassword": {
+            "type": "string",
+            "value": "[parameters('adminPassword')]"
+        }
+    }  
+}

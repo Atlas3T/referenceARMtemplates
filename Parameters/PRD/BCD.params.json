@@ -1,0 +1,27 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "resourceTemplateUri": {
+            "value" : "https://raw.githubusercontent.com/Switch1983/ARMResourceTemplates/master/"
+        },
+        "vNetResourceGroup":     {"value": "atlas-prd-vNet"},    
+        "vNetName":              {"value": "atlas-prd-vNet"},  
+        "subnetName":            {"value": "atlas-prd-data"},
+        "lbSubnetName":          {"value": "atlas-prd-data"},  
+
+        "resourcePrefix":        {"value": "atl-prd-bcd"},  
+
+        "adminUsername":         {"value": "guest972"},
+
+        "vmSize":                {"value": "Standard_D2s_v3"},
+        "instanceCount":         {"value": 2},
+        "dataDiskCount":         {"value": 1}, 
+
+        "dataDisk1_name":        {"value": "ApplicationData"},
+        "dataDisk1_uriSuffix":   {"value": "-ApplicationData.vhd"},
+        "dataDisk1_diskSizeGB":  {"value": 1023},
+        "dataDisk1_storageType": {"value": "Standard"},
+        "dataDisk1_caching":     {"value": "ReadWrite"}
+    }
+}

@@ -1,0 +1,25 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "resourceTemplateUri": {
+            "value" : "https://raw.githubusercontent.com/Switch1983/ARMResourceTemplates/master/"
+        },
+        "vNetResourceGroup":    {"value": "atlas-prd-vNet"},    
+        "vnetName":             {"value": "atlas-prd-vNet"},    
+        "subnetName":           {"value": "atlas-prd-web"},
+        "lbSubnetName":         {"value": "atlas-prd-web"},
+        
+        "resourcePrefix":       {"value": "atl-prd-exwa"}, 
+
+        "adminUsername":        {"value": "guest972"},
+
+        "vmSize":               {"value": "Standard_D2s_v3"},
+        "instanceCount":        {"value": 2},
+
+        "dataDiskCount":        {"value": 1},
+        "dataDisk1_name":       {"value": "dataDisk1"},
+        "dataDisk1_uriSuffix":  {"value": "-dataDisk01.vhd"},
+        "dataDisk1_diskSizeGB": {"value": 1023} 
+    }
+}

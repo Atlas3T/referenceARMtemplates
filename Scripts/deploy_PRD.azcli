@@ -1,0 +1,39 @@
+# Using Azure PRD
+
+#VNET
+az group create -n "ATLAS-PRD-VNET" -l "NorthEurope" 
+az deployment group create -g "ATLAS-PRD-VNET" --template-file ".\Templates\atlas-vnet.deploy.json" --parameters @".\Parameters\PRD\VNET.params.json" --verbose
+
+#Deployments without load balancers:
+
+#DC
+az group create -n "ATLAS-PRD-DC" -l "NorthEurope" 
+az deployment group create -g "ATLAS-PRD-DC" --template-file ".\Templates\vmas-sa-nic.master.json" --parameters @".\Parameters\PRD\DC.params.json" --verbose
+
+#MGMT
+az group create -n "ATLAS-PRD-MGMT" -l "NorthEurope" 
+az deployment group create -g "ATLAS-PRD-MGMT" --template-file ".\Templates\vmas-sa-nic.master.json" --parameters @".\Parameters\PRD\MGMT.params.json" --verbose
+
+#Deployments with load balancers for external access (load balancers not needed if sat behind Barracuda's that act as load balancers):
+
+#EXWA
+az group create -n "ATLAS-PRD-EXWA" -l "NorthEurope" 
+az deployment group create -g "ATLAS-PRD-EXWA" --template-file ".\Templates\vmas-sa-nic-lb-external.master.json" --parameters @".\Parameters\PRD\EXWA.params.json" --verbose
+
+#BITCOIN
+az group create -n "ATLAS-PRD-BTC" -l "NorthEurope" 
+az deployment group create -g "ATLAS-PRD-BTC" --template-file ".\Templates\vmas-sa-nic.master.json" --parameters @".\Parameters\PRD\BTC.params.json" --verbose
+
+#ETHEREUM
+az group create -n "ATLAS-PRD-ETH" -l "NorthEurope" 
+az deployment group create -g "ATLAS-PRD-ETH" --template-file ".\Templates\vmas-sa-nic.master.json" --parameters @".\Parameters\PRD\ETH.params.json" --verbose
+
+#CATALYST
+az group create -n "ATLAS-PRD-CAT" -l "NorthEurope" 
+az deployment group create -g "ATLAS-PRD-CAT" --template-file ".\Templates\vmas-sa-nic.master.json" --parameters @".\Parameters\PRD\CAT.params.json" --verbose
+
+#Deployments with load balancers for SQL:
+
+#BCD
+az group create -n "ATLAS-PRD-BCD" -l "NorthEurope" 
+az deployment group create -g "ATLAS-PRD-BCD" --template-file ".\Templates\vmas-sa-nic-lb-sql.master.json" --parameters @".\Parameters\PRD\BCD.params.json" --verbose

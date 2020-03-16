@@ -1,0 +1,24 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "resourceTemplateUri": {
+            "value" : "https://github.com/Switch1983/ARMResourceTemplates/"
+        },
+        "vNetResourceGroup":    {"value": "atlas-tst-vNet"},    
+        "vnetName":             {"value": "atlas-tst-vNet"},    
+        "subnetName":           {"value": "atlas-tst-crypto"},
+        
+        "resourcePrefix":       {"value": "atl-tst-btc"},  
+
+        "adminUsername":        {"value": "guest972"},
+
+        "vmSize":               {"value": "Standard_B2ms"},
+        "instanceCount":        {"value": 1},
+
+        "dataDiskCount":        {"value": 1},
+        "dataDisk1_name":       {"value": "dataDisk1"},
+        "dataDisk1_uriSuffix":  {"value": "-dataDisk01.vhd"},
+        "dataDisk1_diskSizeGB": {"value": 1023}     
+    }
+}
